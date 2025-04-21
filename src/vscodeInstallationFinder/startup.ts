@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 import { registerCommands } from './commands';
 import { registerDocuments } from './documents';
+import { log, showTimedInformationMessage } from '../util/logging';
+
 
 export function startup(context: vscode.ExtensionContext) {
     // Usage: `import { startup as startupAllVSCodeInstallationFolder } from './vscodeInstallationFinder/startup';`
