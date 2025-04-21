@@ -164,14 +164,12 @@ export async function openWorkspaceInVSCode(installation: VSCodeInstallation, wo
 
 // Register our commands for run groups
 export function registerCommands(context: vscode.ExtensionContext) {
-    // Register new commands    
-    const installationFinder = new VSCodeInstallationFinder();
-    
-    // const outputChannel = vscode.window.createOutputChannel('VSCode Version Selector');
-    // outputChannel.clear();
+
     outputChannel.appendLine('registerCommands(context) hit!');
     outputChannel.show();
 
+    const installationFinder = new VSCodeInstallationFinder(context);
+    
     // Command to discover VSCode installations
     let discoverCommand = vscode.commands.registerCommand('phoVersionSelector.discoverInstallations', async () => {
         try {
@@ -225,9 +223,13 @@ export function registerCommands(context: vscode.ExtensionContext) {
                 installations.map(installation => ({
                     label: installation.displayName,
                     description: installation.path,
-                    installation
+                    installation,
+                    iconPath: installation.iconPath // Use the extracted icon
                 })),
-                { placeHolder: 'Select VSCode version to open the file with' }
+                { 
+                    placeHolder: 'Select VSCode version to open the file with',
+                    matchOnDescription: true
+                }
             );
 
             if (!selectedVersion) {

@@ -15,6 +15,7 @@
         "url": "https://github.com/CommanderPho/pho-vscode-version-selector"
     },
     "activationEvents": [
+        "onStartupFinished",
         "onCommand:extension.sayHello",
         "onCommand:phoVersionSelector.discoverInstallations",
         "onCommand:phoVersionSelector.openInVersion",

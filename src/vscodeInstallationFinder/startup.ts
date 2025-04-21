@@ -24,4 +24,14 @@ export function startup(context: vscode.ExtensionContext) {
 
     // Register cell status bar
     // registerCellStatusBarProvider(context);
+
+    // Run the discovery command automatically on startup
+    void vscode.commands.executeCommand('phoVersionSelector.discoverInstallations')
+    .then(() => {
+        log('VSCode installations discovered on startup');
+    }, error => {
+        log(`ERR: Failed to discover VSCode installations on startup: ${error}`);
+    });
+
+    
 }

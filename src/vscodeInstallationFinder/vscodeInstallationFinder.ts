@@ -2,12 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as vscode from 'vscode';
-import { log, showTimedInformationMessage } from '../util/logging';
+import { log } from '../util/logging';
+import { IconExtractor } from '../util/iconExtractor';
+
 
 export interface VSCodeInstallation {
     path: string;
     version: string;
     displayName: string;
+    iconPath?: vscode.Uri; // Add this property
 }
 
 export class VSCodeInstallationFinder {
@@ -30,6 +33,12 @@ export class VSCodeInstallationFinder {
     };
 
     private cachedInstallations: VSCodeInstallation[] | null = null;
+    private iconExtractor: IconExtractor;
+
+
+    constructor(context: vscode.ExtensionContext) {
+        this.iconExtractor = new IconExtractor(context);
+    }
 
     /**
      * Discovers VSCode installations on the system
@@ -65,6 +74,18 @@ export class VSCodeInstallationFinder {
             }
         }
 
+        // Extract icons for each installation
+        for (const installation of installations) {
+            try {
+                installation.iconPath = await this.iconExtractor.getIcon(
+                    installation.path, 
+                    installation.version
+                );
+            } catch (error) {
+                log(`ERR: Failed to get icon for ${installation.path}: ${error}`);
+            }
+        }
+        
         this.cachedInstallations = installations;
         return installations;
     }
