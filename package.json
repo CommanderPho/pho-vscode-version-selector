@@ -15,7 +15,10 @@
         "url": "https://github.com/CommanderPho/pho-vscode-version-selector"
     },
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.sayHello",
+        "onCommand:phoVersionSelector.discoverInstallations",
+        "onCommand:phoVersionSelector.openInVersion",
+        "onCommand:phoVersionSelector.openWorkspaceInVersion"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -23,8 +26,48 @@
             {
                 "command": "extension.sayHello",
                 "title": "Hello World"
+            },
+            {
+                "command": "phoVersionSelector.discoverInstallations",
+                "title": "VSCode Version Selector: Discover VSCode Installations"
+            },
+            {
+                "command": "phoVersionSelector.openInVersion",
+                "title": "VSCode Version Selector: Open Current File in Specific VSCode Version"
+            },
+            {
+                "command": "phoVersionSelector.openWorkspaceInVersion",
+                "title": "VSCode Version Selector: Open Current Workspace in Specific VSCode Version"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "VSCode Version Selector",
+            "properties": {
+                "phoVersionSelector.customInstallationPaths": {
+                    "type": "array",
+                    "default": [],
+                    "description": "Custom paths to VSCode installations",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "phoVersionSelector.openInVersion",
+                    "group": "navigation"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "phoVersionSelector.openInVersion",
+                    "group": "navigation",
+                    "when": "resourceLangId"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

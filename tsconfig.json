@@ -16,7 +16,8 @@
         // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
         // "noUnusedParameters": true,  /* Report errors on unused parameters. */
         "esModuleInterop": true,
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
     },
     "exclude": [
         "node_modules",
