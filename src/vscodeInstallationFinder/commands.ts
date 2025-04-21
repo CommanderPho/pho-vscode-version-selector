@@ -75,27 +75,33 @@ export async function openWorkspaceInVSCode(installation: VSCodeInstallation, wo
 export function registerCommands(context: vscode.ExtensionContext) {
     // Register new commands    
     const installationFinder = new VSCodeInstallationFinder();
+    
+    const outputChannel = vscode.window.createOutputChannel('VSCode Version Selector');
+    outputChannel.clear();
+    outputChannel.appendLine('registerCommands(context) hit!');
+    outputChannel.show();
 
     // Command to discover VSCode installations
     let discoverCommand = vscode.commands.registerCommand('phoVersionSelector.discoverInstallations', async () => {
         try {
             const installations = await installationFinder.findInstallations();
             if (installations.length === 0) {
+                outputChannel.appendLine('No VSCode installations found.');
                 vscode.window.showInformationMessage('No VSCode installations found.');
                 return;
             }
-
+            outputChannel.appendLine(`Found ${installations.length} VSCode installations.`);
             vscode.window.showInformationMessage(`Found ${installations.length} VSCode installations.`);
             
             // Show the installations in the output channel for debugging
-            const outputChannel = vscode.window.createOutputChannel('VSCode Version Selector');
-            outputChannel.clear();
+
             outputChannel.appendLine('Discovered VSCode Installations:');
             installations.forEach(installation => {
                 outputChannel.appendLine(`- ${installation.displayName} (${installation.path})`);
             });
             outputChannel.show();
         } catch (error) {
+            outputChannel.appendLine(`ERR: Error discovering VSCode installations: ${error}`);
             vscode.window.showErrorMessage(`Error discovering VSCode installations: ${error}`);
         }
     });

@@ -7,6 +7,13 @@ import { registerDocuments } from './documents';
 export function startup(context: vscode.ExtensionContext) {
     // Usage: `import { startup as startupAllVSCodeInstallationFolder } from './vscodeInstallationFinder/startup';`
 
+
+    // Initialize configuration if it doesn't exist
+    const config = vscode.workspace.getConfiguration('phoVersionSelector');
+    if (!config.has('customInstallationPaths')) {
+        config.update('customInstallationPaths', [], vscode.ConfigurationTarget.Global);
+    }
+
 	// Register all of our commands
 	registerCommands(context);
 
