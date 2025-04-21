@@ -1,6 +1,6 @@
 {
-    "name": "vscode-version-selector",
-    "displayName": "vscode-version-selector",
+    "name": "pho-vscode-version-selector",
+    "displayName": "pho-vscode-version-selector",
     "description": "Allows the user to open files in specific installations of VSCode",
     "version": "0.0.1",
     "publisher": "phohale",
@@ -12,7 +12,7 @@
     ],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/CommanderPho/vscode-jupyter-cell-tags"
+		"url": "https://github.com/CommanderPho/pho-vscode-version-selector"
 	},
     "activationEvents": [
         "onCommand:extension.sayHello"
