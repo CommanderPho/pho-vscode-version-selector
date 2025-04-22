@@ -2,7 +2,7 @@
     "name": "pho-vscode-version-selector",
     "displayName": "pho-vscode-version-selector",
     "description": "Allows the user to open files in specific installations of VSCode",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "phohale",
     "engines": {
         "vscode": "^1.98.0"
@@ -10,6 +10,7 @@
     "categories": [
         "Other"
     ],
+    "preview": true,
     "repository": {
         "type": "git",
         "url": "https://github.com/CommanderPho/pho-vscode-version-selector"

@@ -166,7 +166,6 @@ export async function openWorkspaceInVSCode(installation: VSCodeInstallation, wo
 export function registerCommands(context: vscode.ExtensionContext) {
 
     outputChannel.appendLine('registerCommands(context) hit!');
-    outputChannel.show();
 
     const installationFinder = new VSCodeInstallationFinder(context);
     
