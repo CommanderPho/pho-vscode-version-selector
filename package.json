@@ -20,7 +20,8 @@
         "onCommand:extension.sayHello",
         "onCommand:phoVersionSelector.discoverInstallations",
         "onCommand:phoVersionSelector.openInVersion",
-        "onCommand:phoVersionSelector.openWorkspaceInVersion"
+        "onCommand:phoVersionSelector.openWorkspaceInVersion",
+        "onCommand:phoVersionSelector.exportWorkspaceExtensions"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -40,6 +41,10 @@
             {
                 "command": "phoVersionSelector.openWorkspaceInVersion",
                 "title": "VSCode Version Selector: Open Current Workspace in Specific VSCode Version"
+            },
+            {
+                "command": "phoVersionSelector.exportWorkspaceExtensions",
+                "title": "VSCode Version Selector: Export Workspace Extensions to JSON"
             }
         ],
         "configuration": {

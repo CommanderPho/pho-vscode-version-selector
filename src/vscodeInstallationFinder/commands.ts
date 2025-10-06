@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process';
 import { VSCodeInstallationFinder, VSCodeInstallation } from './vscodeInstallationFinder';
 import { log, showTimedInformationMessage } from '../util/logging';
 import { myChannel as outputChannel } from '../util/logging';
+import * as fs from 'fs';
 
 import { quotePathIfNeeded } from '../util/filesystem';
 
@@ -289,10 +290,86 @@ export function registerCommands(context: vscode.ExtensionContext) {
         }
     });
 
+    // Command to export a JSON list of all extensions available in the active workspace
+    const exportWorkspaceExtensionsCommand = vscode.commands.registerCommand('phoVersionSelector.exportWorkspaceExtensions', async () => {
+        try {
+            const allExtensions = vscode.extensions.all;
+
+            const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+                ? vscode.workspace.workspaceFolders[0]
+                : undefined;
+
+            const now = new Date();
+            const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+            const workspaceName = workspaceFolder ? path.basename(workspaceFolder.uri.fsPath) : 'no-workspace';
+
+            const defaultFileName = `vscode-extensions-${workspaceName}-${timestamp}.json`;
+            const defaultDirUri = workspaceFolder ? workspaceFolder.uri : undefined;
+
+            const saveUri = await vscode.window.showSaveDialog({
+                defaultUri: defaultDirUri ? vscode.Uri.joinPath(defaultDirUri, defaultFileName) : undefined,
+                saveLabel: 'Export Extensions',
+                filters: { 'JSON': ['json'] }
+            });
+
+            if (!saveUri) {
+                return; // user cancelled
+            }
+
+            const extensionsExport = allExtensions.map(ext => {
+                const pkg = ext.packageJSON as any;
+                return {
+                    id: ext.id,
+                    displayName: pkg?.displayName ?? ext.id,
+                    version: pkg?.version ?? null,
+                    publisher: pkg?.publisher ?? null,
+                    description: pkg?.description ?? null,
+                    categories: pkg?.categories ?? undefined,
+                    repository: pkg?.repository ?? undefined,
+                    engines: pkg?.engines ?? undefined,
+                    isActive: ext.isActive,
+                    extensionKind: typeof ext.extensionKind === 'number' ? ext.extensionKind : undefined,
+                    isBuiltin: pkg?.isBuiltin ?? false,
+                    extensionLocation: ext.extensionUri.fsPath,
+                    activationEvents: pkg?.activationEvents ?? undefined
+                };
+            });
+
+            const exportPayload = {
+                metadata: {
+                    exportedAt: new Date().toISOString(),
+                    workspaceName,
+                    workspacePath: workspaceFolder ? workspaceFolder.uri.fsPath : null,
+                    totalExtensions: extensionsExport.length
+                },
+                extensions: extensionsExport
+            };
+
+            const json = JSON.stringify(exportPayload, null, 2);
+            await fs.promises.writeFile(saveUri.fsPath, json, 'utf8');
+
+            outputChannel.appendLine(`Exported ${extensionsExport.length} extensions to ${saveUri.fsPath}`);
+            vscode.window.showInformationMessage(`Exported ${extensionsExport.length} extensions.`, 'Open File', 'Reveal in Explorer')
+                .then(async selection => {
+                    if (selection === 'Open File') {
+                        await vscode.window.showTextDocument(saveUri);
+                    } else if (selection === 'Reveal in Explorer') {
+                        await vscode.commands.executeCommand('revealFileInOS', saveUri);
+                    }
+                });
+            outputChannel.show();
+        } catch (error) {
+            outputChannel.appendLine(`ERR: Failed to export extensions: ${error}`);
+            vscode.window.showErrorMessage(`Failed to export extensions: ${error}`);
+            outputChannel.show();
+        }
+    });
+
     // Register the commands
     context.subscriptions.push(discoverCommand);
     context.subscriptions.push(openInVersionCommand);
     context.subscriptions.push(openWorkspaceInVersionCommand);
+    context.subscriptions.push(exportWorkspaceExtensionsCommand);
 
 }
 
