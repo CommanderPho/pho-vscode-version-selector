@@ -295,16 +295,19 @@ export function registerCommands(context: vscode.ExtensionContext) {
         try {
             const allExtensions = vscode.extensions.all;
 
-            const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-                ? vscode.workspace.workspaceFolders[0]
-                : undefined;
+			const workspaceFolder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+				? vscode.workspace.workspaceFolders[0]
+				: undefined;
+
+			// Prefer last-used export directory if available
+			const lastExportDirFsPath = context.globalState.get<string>('phoVersionSelector.lastExportFolder');
 
             const now = new Date();
             const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-            const workspaceName = workspaceFolder ? path.basename(workspaceFolder.uri.fsPath) : 'no-workspace';
-
-            const defaultFileName = `vscode-extensions-${workspaceName}-${timestamp}.json`;
-            const defaultDirUri = workspaceFolder ? workspaceFolder.uri : undefined;
+			const defaultFileName = `${timestamp}_VSCode_Version.json`;
+			const defaultDirUri = lastExportDirFsPath
+				? vscode.Uri.file(lastExportDirFsPath)
+				: (workspaceFolder ? workspaceFolder.uri : undefined);
 
             const saveUri = await vscode.window.showSaveDialog({
                 defaultUri: defaultDirUri ? vscode.Uri.joinPath(defaultDirUri, defaultFileName) : undefined,
@@ -316,7 +319,7 @@ export function registerCommands(context: vscode.ExtensionContext) {
                 return; // user cancelled
             }
 
-            const extensionsExport = allExtensions.map(ext => {
+			const extensionsExport = allExtensions.map(ext => {
                 const pkg = ext.packageJSON as any;
                 return {
                     id: ext.id,
@@ -338,8 +341,8 @@ export function registerCommands(context: vscode.ExtensionContext) {
             const exportPayload = {
                 metadata: {
                     exportedAt: new Date().toISOString(),
-                    workspaceName,
-                    workspacePath: workspaceFolder ? workspaceFolder.uri.fsPath : null,
+					workspaceName: workspaceFolder ? path.basename(workspaceFolder.uri.fsPath) : 'no-workspace',
+					workspacePath: workspaceFolder ? workspaceFolder.uri.fsPath : null,
                     totalExtensions: extensionsExport.length
                 },
                 extensions: extensionsExport
@@ -347,6 +350,13 @@ export function registerCommands(context: vscode.ExtensionContext) {
 
             const json = JSON.stringify(exportPayload, null, 2);
             await fs.promises.writeFile(saveUri.fsPath, json, 'utf8');
+
+			// Remember last export directory
+			try {
+				await context.globalState.update('phoVersionSelector.lastExportFolder', path.dirname(saveUri.fsPath));
+			} catch (persistErr) {
+				outputChannel.appendLine(`WARN: Failed to persist last export folder: ${persistErr}`);
+			}
 
             outputChannel.appendLine(`Exported ${extensionsExport.length} extensions to ${saveUri.fsPath}`);
             vscode.window.showInformationMessage(`Exported ${extensionsExport.length} extensions.`, 'Open File', 'Reveal in Explorer')
